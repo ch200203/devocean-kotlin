@@ -12,7 +12,7 @@ info:
   version: 0.0.1
 servers:
   - description: devocean-openApi
-    url: localhost:9090
+    url: http://localhost:9090
 paths:
   /v1/apis:
     post:
@@ -37,11 +37,285 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /v1/apis/:
+    get:
+      summary: API 스펙 목록
+      operationId: listApiSpecs
+      responses:
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpecList'
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/apis/{apiId}:
+    get:
+      summary: API 스펙 상세 조회
+      operationId: getApiSpec
+      parameters:
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': 
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpec'
+        '400':
+            description: 실패
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+    put:
+      summary: API 스펙 수정
+      operationId: updateApiSpec
+      parameters:
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiSpec'
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpec'
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+        summary: API 스펙 삭제
+        operationId: deleteApiSpec
+        parameters:
+          - in: path
+            name: apiId
+            required: true
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: 성공
+            content:
+              application/json:
+                schema:
+                  type: boolean
+          '400':
+            description: 실패
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+  /v1/apis/{apiId}/file:
+    post:
+      summary: API 스펙 파일업로드
+      operationId: uploadApiSpecFile
+      parameters:
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpec'
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/apis/{apiId}/file/download/{version}:
+    get:
+      summary: 'api spec 다운로드'
+      parameters:
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: version
+          required: true
+          schema: 
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            multipart/form-data:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/apis/{apiId}/tags:
+    put:
+      summary: API스펙 태깅
+      operationId: tagApiSpec
+      parameters: 
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiSpec'
+      responses: 
+        '200':
+          description: '성공'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpec'
+        '400':
+          description: '실패'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+
 components: 
   schemas: 
-    ApiSpec:
+    APISpecFile:
+      type: object
       properties:
-        id:   
+        fileId:
+          type: integer
+        filePath: 
+          type: string
+        fileName: 
+          type: string
+        fileSize:
+          type: string
+        audit: 
+          $ref: '#/components/schemas/BaseEntity'
+    S3Location:
+       properties:
+        bucketName:
+          type: string
+        directory:
+          type: string
+        fileName:
+          type: string
+        audit:
+          $ref: '#/components/schemas/BaseEntity'
+    GitHub:
+      type: object
+      properties:
+        repositoryName:
+          type: string
+        branchName:
+          type: string
+        directory:
+          type: string
+        fileName:
+          type: string
+        audit:
+          $ref: '#/components/schemas/BaseEntity'
+    BaseEntity:
+      type: object
+      properties:
+        createdDate:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        modifiedDate:
+          type: string
+          format: date-time
+        modifiedBy:
+          type: string      
+    ApiSpec:
+      type: object
+      properties:
+        apiId:   
           type: integer
           description: "api-spec 아이디"
-        
+        name: 
+          type: string
+          description: "api-spec 이름"
+        project:
+          type: object
+          # 연동 필요
+          # $ref: '#/compoenets/project'
+        latestVersion:
+          type: string
+          description: 최신 스펙 버젼 태깅
+        stableVersion:
+          type: string
+          description: 안정화된 스펙 버젼 태깅
+        specStorageType:
+          type: string
+          enum: [ALL, HOST, S3, GITHUB]
+          description: 스펙 저장소 타입
+        # FIXME 
+        apiSpecFile:
+          $ref: '#/components/schemas/APISpecFile'
+        s3Location:
+          $ref: '#/components/schemas/S3Location'
+        gitHubInfo:
+          $ref: '#/components/schemas/GitHub'
+        audit:
+          $ref: '#/components/schemas/BaseEntity'
+    ApiSpecList:
+      type: object
+      properties:
+        apiSpecs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiSpec'
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
