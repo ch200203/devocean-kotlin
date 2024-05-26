@@ -12,10 +12,15 @@ info:
   version: 0.0.1
 servers:
   - description: devocean-openApi
-    url: http://localhost:9090
+    url: http://localhost:9090/api
+tags:
+  - name: apis
+    description: 'ApiSpec'
 paths:
   /v1/apis:
     post:
+      tags:
+        - apis
       summary: API 스펙 생성
       operationId: createApiSpec
       requestBody:
@@ -39,6 +44,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /v1/apis/:
     get:
+      tags:
+          - apis
       summary: API 스펙 목록
       operationId: listApiSpecs
       responses:
@@ -56,6 +63,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /v1/apis/{apiId}:
     get:
+      tags:
+        - apis
       summary: API 스펙 상세 조회
       operationId: getApiSpec
       parameters:
@@ -78,6 +87,8 @@ paths:
                 schema:
                   $ref: '#/components/schemas/Error'
     put:
+      tags:
+        - apis
       summary: API 스펙 수정
       operationId: updateApiSpec
       parameters:
@@ -106,6 +117,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
+        tags:
+        - apis
         summary: API 스펙 삭제
         operationId: deleteApiSpec
         parameters:
@@ -129,6 +142,8 @@ paths:
                   $ref: '#/components/schemas/Error'
   /v1/apis/{apiId}/file:
     post:
+      tags:
+        - apis
       summary: API 스펙 파일업로드
       operationId: uploadApiSpecFile
       parameters:
@@ -162,6 +177,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /v1/apis/{apiId}/file/download/{version}:
     get:
+      tags:
+        - apis
       summary: 'api spec 다운로드'
       parameters:
         - in: path
@@ -190,6 +207,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /v1/apis/{apiId}/tags:
     put:
+      tags:
+        - apis
       summary: API스펙 태깅
       operationId: tagApiSpec
       parameters: 
@@ -217,11 +236,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  # 추가
+  /v1/apis/{apiId}/history:
+    get:
+      tags:
+        - apis
+      summary: API Spec 변경 이력
+      operationId: getApiSpecHistory
+      parameters: 
+        - in: path
+          name: apiId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': 
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiSpec' # TODO: AUD 테이블 생성 필요
 
-
-
-
+# Components
 components: 
+  securitySchemes:
+    bearAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas: 
     APISpecFile:
       type: object
@@ -230,10 +274,13 @@ components:
           type: integer
         filePath: 
           type: string
+          description: 파일 경로
         fileName: 
           type: string
+          description: 파일명
         fileSize:
-          type: string
+          type: integer
+          description: 파일 크기
         audit: 
           $ref: '#/components/schemas/BaseEntity'
     S3Location:
