@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info: 
+  title: devocean-openApi
+  description: |-
+    devocean kotlin open-api Study
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: ch200203@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+servers:
+  - description: devocean-openApi
+    url: localhost:9090
+paths:
+  /v1/apis:
+    post:
+      summary: API 스펙 생성
+      operationId: createApiSpec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiSpec'
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSpec'
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components: 
+  schemas: 
+    ApiSpec:
+      properties:
+        id:   
+          type: integer
+          description: "api-spec 아이디"
+        
